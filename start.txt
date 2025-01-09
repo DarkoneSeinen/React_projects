@@ -1,0 +1,11 @@
+install after creating the app=
+>>>>>npm install web-vitals
+
+cerate react app
+npx create-react-app my-app
+
+>>>npx create-react-app my-app<<<<<
+
+cd my-app
+npm start
+
