@@ -4,7 +4,7 @@ install after creating the app=
 cerate react app
 npx create-react-app my-app
 
->>>npx create-react-app part1<<<<<
+>>>npx create-react-app part2<<<<<
 
 cd my-app
 npm start
