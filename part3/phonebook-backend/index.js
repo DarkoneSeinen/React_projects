@@ -9,6 +9,25 @@ app.use(morgan('tiny'))
 const cors = require('cors')
 app.use(cors())
 
+const mongoose = require('mongoose')
+require('dotenv').config()
+
+
+//conexion a la bd
+const url = process.env.MONGODB_URI
+
+mongoose.set('strictQuery', false)
+mongoose.connect(url)
+  .then(() => {
+    console.log('Connected to MongoDB')
+  })
+  .catch(error => {
+    console.error('Error connecting to MongoDB:', error.message)
+  })
+
+const Person = require('./models/person')
+
+
 
 
 let persons = [
@@ -19,8 +38,11 @@ let persons = [
 ]
 
 app.get('/api/persons', (req, res) => {
-  res.json(persons)
+  Person.find({}).then(persons => {
+    res.json(persons)
+  })
 })
+
 
 app.get('/api/persons/:id', (req, res) => {
   const id = Number(req.params.id)
@@ -28,35 +50,30 @@ app.get('/api/persons/:id', (req, res) => {
   person ? res.json(person) : res.status(404).end()
 })
 
-app.delete('/api/persons/:id', (req, res) => {
-  const id = Number(req.params.id)
-  persons = persons.filter(p => p.id !== id)
-  res.status(204).end()
+app.delete('/api/persons/:id', (req, res, next) => {
+  Person.findByIdAndRemove(req.params.id)
+    .then(() => res.status(204).end())
+    .catch(error => next(error))
 })
 
-app.post('/api/persons', (req, res) => {
+
+app.post('/api/persons', (req, res, next) => {
   const body = req.body
 
-  // Verificar campos obligatorios
   if (!body.name || !body.number) {
     return res.status(400).json({ error: 'Name or number missing' })
   }
 
-  // Verificar unicidad del nombre
-  const nameExists = persons.some(p => p.name === body.name)
-  if (nameExists) {
-    return res.status(400).json({ error: 'Name must be unique' })
-  }
-
-  const person = {
-    id: Math.floor(Math.random() * 1000000),
+  const person = new Person({
     name: body.name,
     number: body.number,
-  }
+  })
 
-  persons.push(person)
-  res.json(person)
+  person.save()
+    .then(savedPerson => res.json(savedPerson))
+    .catch(error => next(error))
 })
+
 
 app.get('/info', (req, res) => {
   const date = new Date()
@@ -76,4 +93,17 @@ const PORT = 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  }
+
+  next(error)
+}
+
+app.use(errorHandler)
+
 
