@@ -1,10 +1,12 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const blogSchema = new mongoose.Schema({
   title: String,
   author: String,
   url: String,
-  likes: Number
+  likes: Number,
 })
 
-module.exports = mongoose.model('Blog', blogSchema)
+const Blog = mongoose.model('Blog', blogSchema)
+
+export default Blog
