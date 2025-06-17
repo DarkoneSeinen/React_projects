@@ -3,15 +3,9 @@ import Blog from '../models/blog.js'
 
 const blogsRouter = express.Router()
 
-blogsRouter.get('/', async (req, res) => {
+blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog.find({})
-  res.json(blogs)
-})
-
-blogsRouter.post('/', async (req, res) => {
-  const blog = new Blog(req.body)
-  const savedBlog = await blog.save()
-  res.status(201).json(savedBlog)
+  response.json(blogs)
 })
 
 export default blogsRouter
