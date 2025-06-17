@@ -38,7 +38,69 @@ test('all blogs are returned', async () => {
   assert.strictEqual(response.body.length, initialBlogs.length)
 })
 
-// desconectar después de todas las pruebas
+test('unique identifier property is named id', async () => {
+  const response = await api.get('/api/blogs')
+  const blog = response.body[0]
+  assert.ok(blog.id)
+  assert.strictEqual(typeof blog.id, 'string')
+  assert.strictEqual(blog._id, undefined)
+})
+
+test('a valid blog can be added', async () => {
+  const newBlog = {
+    title: 'New blog post',
+    author: 'DarkoneSeinen',
+    url: 'http://newblog.com',
+    likes: 5
+  }
+
+  const response = await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await api.get('/api/blogs')
+  assert.strictEqual(blogsAtEnd.body.length, initialBlogs.length + 1)
+
+  const titles = blogsAtEnd.body.map(b => b.title)
+  assert(titles.includes(newBlog.title))
+})
+
+describe('deletion of a blog', () => {
+  test('succeeds with status code 204 if id is valid', async () => {
+    const blogsAtStart = await Blog.find({})
+    const blogToDelete = blogsAtStart[0]
+
+    await api
+      .delete(`/api/blogs/${blogToDelete._id}`)
+      .expect(204)
+
+    const blogsAtEnd = await Blog.find({})
+    assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1)
+
+    const titles = blogsAtEnd.map(b => b.title)
+    assert(!titles.includes(blogToDelete.title))
+  })
+})
+
+describe('updating a blog', () => {
+  test('succeeds in updating likes field', async () => {
+    const blogsAtStart = await Blog.find({})
+    const blogToUpdate = blogsAtStart[0]
+
+    const updatedData = { ...blogToUpdate.toJSON(), likes: blogToUpdate.likes + 1 }
+
+    const response = await api
+      .put(`/api/blogs/${blogToUpdate._id}`)
+      .send(updatedData)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    assert.strictEqual(response.body.likes, blogToUpdate.likes + 1)
+  })
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
