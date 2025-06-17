@@ -1,9 +1,15 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
+  username: String,
   name: String,
   passwordHash: String,
+  notes: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Note'
+    }
+  ],
 })
 
 userSchema.set('toJSON', {
@@ -11,9 +17,10 @@ userSchema.set('toJSON', {
     returnedObject.id = returnedObject._id.toString()
     delete returnedObject._id
     delete returnedObject.__v
-    delete returnedObject.passwordHash 
+    delete returnedObject.passwordHash
   }
 })
 
 const User = mongoose.model('User', userSchema)
-module.exports = User
+
+export default User

@@ -1,15 +1,10 @@
-import mongoose from 'mongoose'
-import config from './utils/config.js' // este ya lo debes tener
-import logger from './utils/logger.js' // si lo tienes, si no, usa console.log
+import app from './app.js'
+import http from 'http'
+import config from './utils/config.js'
+import logger from './utils/logger.js'
 
-mongoose.set('strictQuery', false)
+const server = http.createServer(app)
 
-logger.info('connecting to', config.MONGODB_URI)
-
-mongoose.connect(config.MONGODB_URI)
-  .then(() => {
-    logger.info('connected to MongoDB')
-  })
-  .catch((error) => {
-    logger.error('error connecting to MongoDB:', error.message)
-  })
+server.listen(config.PORT, () => {
+  logger.info(`Server running on port ${config.PORT}`)
+})

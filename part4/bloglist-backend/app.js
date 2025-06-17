@@ -4,7 +4,7 @@ import cors from 'cors'
 import blogsRouter from './controllers/blogs.js'
 import config from './utils/config.js'
 import logger from './utils/logger.js'
-const usersRouter = require('./controllers/users')
+import usersRouter from './controllers/users.js'
 
 
 mongoose.set('strictQuery', false)
