@@ -4,6 +4,9 @@ import mongoose from 'mongoose'
 import supertest from 'supertest'
 import app from '../app.js'
 import Blog from '../models/blog.js'
+import bcrypt from 'bcrypt'
+import User from '../models/user.js'
+
 
 const api = supertest(app)
 
@@ -104,3 +107,64 @@ describe('updating a blog', () => {
 after(async () => {
   await mongoose.connection.close()
 })
+
+let token = ''
+
+beforeEach(async () => {
+  await Blog.deleteMany({})
+  await User.deleteMany({})
+
+  const passwordHash = await bcrypt.hash('password', 10)
+  const user = new User({ username: 'tester', passwordHash })
+  await user.save()
+
+  const response = await api
+    .post('/api/login')
+    .send({ username: 'tester', password: 'password' })
+
+  token = response.body.token
+
+  const blogObjects = initialBlogs.map(blog => new Blog({ ...blog, user: user._id }))
+  const promiseArray = blogObjects.map(blog => blog.save())
+  await Promise.all(promiseArray)
+})
+
+test('a valid blog can be added with token', async () => {
+  const newBlog = {
+    title: 'Secured blog',
+    author: 'Root',
+    url: 'http://secure.com',
+    likes: 1
+  }
+
+  await api
+    .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await Blog.find({})
+  const titles = blogsAtEnd.map(b => b.title)
+  expect(titles).toContain('Secured blog')
+})
+
+
+test('blog is not added without token', async () => {
+  const newBlog = {
+    title: 'Unauthorized blog',
+    author: 'Intruder',
+    url: 'http://unauth.com',
+    likes: 0
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(401)
+
+  const blogsAtEnd = await Blog.find({})
+  const titles = blogsAtEnd.map(b => b.title)
+  expect(titles).not.toContain('Unauthorized blog')
+})
+

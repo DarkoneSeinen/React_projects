@@ -7,6 +7,7 @@ import logger from './utils/logger.js'
 import usersRouter from './controllers/users.js'
 import loginRouter from './controllers/login.js'
 import tokenExtractor from './middleware/tokenExtractor.js'
+import userExtractor from './middleware/userExtractor.js'
 
 
 
@@ -31,6 +32,7 @@ app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
 app.use(tokenExtractor)
+app.use('/api/blogs', userExtractor, blogsRouter)
 
 
 export default app
