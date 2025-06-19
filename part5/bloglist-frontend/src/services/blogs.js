@@ -1,5 +1,5 @@
 import axios from 'axios'
-const baseUrl = 'https://literate-space-trout-979xvx5x4xgwf7vp5-3003.app.github.dev/api/blogs' // cámbialo por el correcto
+const baseUrl = 'https://literate-space-trout-979xvx5x4xgwf7vp5-3003.app.github.dev/api/blogs' // reemplaza si es necesario
 
 let token = null
 
@@ -13,4 +13,10 @@ const getAll = async () => {
   return response.data
 }
 
-export default { getAll, setToken }
+const create = async newBlog => {
+  const config = { headers: { Authorization: token } }
+  const response = await axios.post(baseUrl, newBlog, config)
+  return response.data
+}
+
+export default { getAll, create, setToken }

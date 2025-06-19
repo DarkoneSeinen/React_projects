@@ -8,10 +8,13 @@ const App = () => {
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
   const [blogs, setBlogs] = useState([])
+  const [newTitle, setNewTitle] = useState('')
+  const [newAuthor, setNewAuthor] = useState('')
+  const [newUrl, setNewUrl] = useState('')
 
-  // Cargar usuario del localStorage si existe
+  // Recuperar usuario del localStorage al cargar
   useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem('loggedBlogUser')
+    const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser')
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
       setUser(user)
@@ -22,16 +25,15 @@ const App = () => {
   // Cargar blogs si el usuario está autenticado
   useEffect(() => {
     if (user) {
-      blogService.getAll().then(blogs => setBlogs(blogs))
+      blogService.getAll().then(data => setBlogs(data))
     }
   }, [user])
 
-  // Login
   const handleLogin = async (event) => {
     event.preventDefault()
     try {
       const user = await loginService.login({ username, password })
-      window.localStorage.setItem('loggedBlogUser', JSON.stringify(user))
+      window.localStorage.setItem('loggedBlogAppUser', JSON.stringify(user))
       blogService.setToken(user.token)
       setUser(user)
       setUsername('')
@@ -41,13 +43,30 @@ const App = () => {
     }
   }
 
-  // Logout
   const handleLogout = () => {
-    window.localStorage.removeItem('loggedBlogUser')
+    window.localStorage.removeItem('loggedBlogAppUser')
     setUser(null)
+    setBlogs([])
   }
 
-  // Formulario de login
+  const addBlog = async (event) => {
+    event.preventDefault()
+    try {
+      const newBlog = {
+        title: newTitle,
+        author: newAuthor,
+        url: newUrl,
+      }
+      const createdBlog = await blogService.create(newBlog)
+      setBlogs(blogs.concat(createdBlog))
+      setNewTitle('')
+      setNewAuthor('')
+      setNewUrl('')
+    } catch (error) {
+      console.error('Error creating blog:', error)
+    }
+  }
+
   const loginForm = () => (
     <div>
       <h2>Log in to application</h2>
@@ -75,20 +94,54 @@ const App = () => {
     </div>
   )
 
-  if (user === null) {
-    return loginForm()
-  }
+  const blogForm = () => (
+    <form onSubmit={addBlog}>
+      <h3>Create new</h3>
+      <div>
+        title:
+        <input
+          type="text"
+          value={newTitle}
+          name="Title"
+          onChange={({ target }) => setNewTitle(target.value)}
+        />
+      </div>
+      <div>
+        author:
+        <input
+          type="text"
+          value={newAuthor}
+          name="Author"
+          onChange={({ target }) => setNewAuthor(target.value)}
+        />
+      </div>
+      <div>
+        url:
+        <input
+          type="text"
+          value={newUrl}
+          name="Url"
+          onChange={({ target }) => setNewUrl(target.value)}
+        />
+      </div>
+      <button type="submit">create</button>
+    </form>
+  )
 
-  // Vista si el usuario está logueado
+  if (!user) return loginForm()
+
   return (
     <div>
       <h2>blogs</h2>
       <p>
         {user.name} logged in <button onClick={handleLogout}>logout</button>
       </p>
-      {blogs.map(blog =>
+
+      {blogForm()}
+
+      {blogs.map(blog => (
         <Blog key={blog.id} blog={blog} />
-      )}
+      ))}
     </div>
   )
 }
