@@ -14,7 +14,9 @@ usersRouter.post('/', async (request, response) => {
     username,
     name,
     passwordHash,
+    blogs: [] // <-- asegura que se cree el campo blogs como array
   })
+
 
   const savedUser = await user.save()
 

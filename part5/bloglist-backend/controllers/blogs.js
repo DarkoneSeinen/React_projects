@@ -5,36 +5,55 @@ import jwt from 'jsonwebtoken'
 
 const blogsRouter = express.Router()
 
-// Obtener todos los blogs, con info del usuario
+// Middleware para extraer el token del header Authorization
+const getTokenFrom = request => {
+  const authorization = request.get('authorization')
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    return authorization.substring(7)
+  }
+  return null
+}
+
+// Obtener todos los blogs
 blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 })
   response.json(blogs)
 })
 
-// Crear un nuevo blog asignando un usuario cualquiera (por ahora)
+// Crear un nuevo blog
 blogsRouter.post('/', async (request, response) => {
-  const { title, author, url, likes } = request.body
-  const decodedToken = jwt.verify(request.token, process.env.SECRET)
+  const token = getTokenFrom(request)
+  let decodedToken
+  try {
+    decodedToken = jwt.verify(token, process.env.SECRET)
+  } catch (error) {
+    return response.status(401).json({ error: 'token missing or invalid' })
+  }
 
   if (!decodedToken.id) {
-    return response.status(401).json({ error: 'token missing or invalid' })
+    return response.status(401).json({ error: 'token invalid' })
   }
 
   const user = await User.findById(decodedToken.id)
 
   const blog = new Blog({
-    title,
-    author,
-    url,
-    likes: likes || 0,
+    title: request.body.title,
+    author: request.body.author,
+    url: request.body.url,
+    likes: request.body.likes || 0,
     user: user._id
   })
 
   const savedBlog = await blog.save()
+
+  // 🔧 Evita el crash si `user.blogs` está indefinido
+  user.blogs ??= []
   user.blogs = user.blogs.concat(savedBlog._id)
   await user.save()
 
-  response.status(201).json(savedBlog)
+  const populatedBlog = await savedBlog.populate('user', { username: 1, name: 1 })
+
+  response.status(201).json(populatedBlog)
 })
 
 // Borrar un blog
@@ -45,7 +64,15 @@ blogsRouter.delete('/:id', async (request, response) => {
     return response.status(404).json({ error: 'blog not found' })
   }
 
-  if (!request.user || blog.user.toString() !== request.user.id.toString()) {
+  const token = getTokenFrom(request)
+  let decodedToken
+  try {
+    decodedToken = jwt.verify(token, process.env.SECRET)
+  } catch (error) {
+    return response.status(401).json({ error: 'token missing or invalid' })
+  }
+
+  if (blog.user.toString() !== decodedToken.id.toString()) {
     return response.status(401).json({ error: 'unauthorized: not owner' })
   }
 
