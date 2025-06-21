@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import loginService from './services/login'
 import blogService from './services/blogs'
 import Blog from './components/Blog'
+import Notification from './components/Notification'
 
 const App = () => {
   const [username, setUsername] = useState('')
@@ -11,6 +12,7 @@ const App = () => {
   const [newTitle, setNewTitle] = useState('')
   const [newAuthor, setNewAuthor] = useState('')
   const [newUrl, setNewUrl] = useState('')
+  const [notification, setNotification] = useState({ message: null, type: null })
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser')
@@ -22,6 +24,13 @@ const App = () => {
     }
   }, [])
 
+  const notify = (message, type = 'success') => {
+    setNotification({ message, type })
+    setTimeout(() => {
+      setNotification({ message: null, type: null })
+    }, 5000)
+  }
+
   const handleLogin = async (event) => {
     event.preventDefault()
     try {
@@ -32,8 +41,9 @@ const App = () => {
       setUsername('')
       setPassword('')
       blogService.getAll().then(blogs => setBlogs(blogs))
+      notify(`${user.name} logged in`)
     } catch (error) {
-      console.error('Login failed', error)
+      notify('Wrong username or password', 'error')
     }
   }
 
@@ -41,6 +51,7 @@ const App = () => {
     window.localStorage.removeItem('loggedBlogAppUser')
     setUser(null)
     blogService.setToken(null)
+    notify('Logged out')
   }
 
   const addBlog = async (event) => {
@@ -56,14 +67,16 @@ const App = () => {
       setNewTitle('')
       setNewAuthor('')
       setNewUrl('')
+      notify(`A new blog "${returnedBlog.title}" by ${returnedBlog.author} added`)
     } catch (error) {
-      console.error('Error creating blog:', error)
+      notify('Error creating blog', 'error')
     }
   }
 
   const loginForm = () => (
     <div>
       <h2>Log in to application</h2>
+      <Notification message={notification.message} type={notification.type} />
       <form onSubmit={handleLogin}>
         <div>
           username
@@ -91,6 +104,7 @@ const App = () => {
   const blogForm = () => (
     <form onSubmit={addBlog}>
       <h3>Create new blog</h3>
+      <Notification message={notification.message} type={notification.type} />
       <div>
         title:
         <input
@@ -126,6 +140,7 @@ const App = () => {
   return (
     <div>
       <h2>blogs</h2>
+      <Notification message={notification.message} type={notification.type} />
       <p>{user.name} logged in <button onClick={handleLogout}>logout</button></p>
       {blogForm()}
       {blogs.map(blog =>
