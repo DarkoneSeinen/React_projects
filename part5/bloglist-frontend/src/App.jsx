@@ -1,4 +1,3 @@
-// src/App.jsx
 import { useState, useEffect, useRef } from 'react'
 import loginService from './services/login'
 import blogService from './services/blogs'
@@ -17,9 +16,7 @@ const App = () => {
   const blogFormRef = useRef()
 
   useEffect(() => {
-    blogService.getAll().then(blogs =>
-      setBlogs(blogs)
-    )
+    blogService.getAll().then(blogs => setBlogs(blogs))
   }, [])
 
   useEffect(() => {
@@ -46,7 +43,7 @@ const App = () => {
       setUsername('')
       setPassword('')
       showNotification(`Welcome ${user.name}`)
-    } catch (error) {
+    } catch {
       showNotification('wrong username or password')
     }
   }
@@ -64,26 +61,36 @@ const App = () => {
       const blogs = await blogService.getAll()
       setBlogs(blogs)
       showNotification(`a new blog "${blogObject.title}" by ${blogObject.author} added`)
-    } catch (error) {
+    } catch {
       showNotification('Error adding blog')
     }
   }
 
-
   const handleLike = async (blog) => {
     try {
       const updatedBlog = {
-        ...blog,
+        title: blog.title,
+        author: blog.author,
+        url: blog.url,
         likes: blog.likes + 1,
-        user: blog.user.id || blog.user,
+        user: blog.user.id || blog.user._id || blog.user,
       }
-      const returnedBlog = await blogService.update(blog.id, updatedBlog)
-      returnedBlog.user = blog.user // restaurar info de usuario
-      setBlogs(blogs.map(b => b.id !== blog.id ? b : returnedBlog))
+
+      const id = blog.id || blog._id
+      if (!id) {
+        showNotification('Error: blog ID missing')
+        return
+      }
+
+      const returnedBlog = await blogService.update(id, updatedBlog)
+      returnedBlog.user = blog.user // mantener los datos del usuario
+
+      setBlogs(blogs.map(b => (b.id || b._id) !== id ? b : returnedBlog))
     } catch (error) {
       showNotification('Error liking blog')
     }
   }
+
 
   const handleDelete = async (blog) => {
     if (window.confirm(`Remove blog "${blog.title}" by ${blog.author}?`)) {
@@ -91,7 +98,7 @@ const App = () => {
         await blogService.remove(blog.id)
         setBlogs(blogs.filter(b => b.id !== blog.id))
         showNotification('Blog removed')
-      } catch (error) {
+      } catch {
         showNotification('Error deleting blog')
       }
     }

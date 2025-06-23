@@ -1,4 +1,5 @@
 import axios from 'axios'
+
 const baseUrl = 'https://literate-space-trout-979xvx5x4xgwf7vp5-3003.app.github.dev/api/blogs'
 
 let token = null
@@ -12,7 +13,7 @@ const getAll = async () => {
   return response.data
 }
 
-const create = async (newObject) => {
+const create = async newObject => {
   const config = {
     headers: { Authorization: token },
   }
@@ -21,7 +22,10 @@ const create = async (newObject) => {
 }
 
 const update = async (id, updatedObject) => {
-  const response = await axios.put(`${baseUrl}/${id}`, updatedObject)
+  const config = {
+    headers: { Authorization: token },
+  }
+  const response = await axios.put(`${baseUrl}/${id}`, updatedObject, config)
   return response.data
 }
 
@@ -32,4 +36,10 @@ const remove = async id => {
   await axios.delete(`${baseUrl}/${id}`, config)
 }
 
-export default { getAll, create, update, remove, setToken }
+export default {
+  getAll,
+  create,
+  update,
+  remove,
+  setToken,
+}
