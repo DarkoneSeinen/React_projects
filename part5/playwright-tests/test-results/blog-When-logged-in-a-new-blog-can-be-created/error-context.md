@@ -1,0 +1,43 @@
+# Page snapshot
+
+```yaml
+- link "Skip to content":
+  - /url: "#start-of-content"
+- banner:
+  - link "Homepage":
+    - /url: https://github.com/
+- main:
+  - heading "Sign in to GitHub" [level=1]
+  - text: Username or email address
+  - textbox "Username or email address"
+  - text: Password
+  - textbox "Password"
+  - link "Forgot password?":
+    - /url: /password_reset
+  - button "Sign in"
+  - heading "Password login alternatives" [level=2]
+  - paragraph:
+    - button "Sign in with a passkey"
+  - paragraph:
+    - text: New to GitHub?
+    - link "Create an account":
+      - /url: /signup?return_to=https%3A%2F%2Fgithub.com%2Fcodespaces%2Fauth%2Fliterate-space-trout-979xvx5x4xgwf7vp5%3Fid%3Djoyful-book-80m3x6n%26cluster%3Duse2%26name%3Dliterate-space-trout-979xvx5x4xgwf7vp5%26port%3D5173%26pb%3Dhttps%253A%252F%252Fliterate-space-trout-979xvx5x4xgwf7vp5-5173.app.github.dev%252Fauth%252Fpostback%252Ftunnel%253Ftunnel%253D1%26cid%3D480c8ec4-5745-46da-8343-0478dbf6a2cf%26type%3Dbasis&source=login
+- contentinfo:
+  - list:
+    - listitem:
+      - link "Terms":
+        - /url: https://docs.github.com/site-policy/github-terms/github-terms-of-service
+    - listitem:
+      - link "Privacy":
+        - /url: https://docs.github.com/site-policy/privacy-policies/github-privacy-statement
+    - listitem:
+      - link "Docs":
+        - /url: https://docs.github.com
+    - listitem:
+      - link "Contact GitHub Support":
+        - /url: https://support.github.com
+    - listitem:
+      - button "Manage cookies"
+    - listitem:
+      - button "Do not share my personal information"
+```
