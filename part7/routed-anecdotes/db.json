@@ -1,0 +1,44 @@
+{
+  "anecdotes": [
+    {
+      "id": "1",
+      "content": "If it hurts, do it more often",
+      "votes": 0
+    },
+    {
+      "id": "2",
+      "content": "Adding manpower to a late software project makes it later!",
+      "votes": 0
+    },
+    {
+      "id": "5575",
+      "content": "test",
+      "author": "test",
+      "info": "test",
+      "votes": 0
+    }
+  ],
+  "users": [
+    {
+      "username": "mluukkai",
+      "password": "secret",
+      "name": "Matti Luukkainen",
+      "id": "1"
+    },
+    {
+      "id": "ca31",
+      "username": "mluukkai",
+      "password": "secret"
+    },
+    {
+      "id": "dbde",
+      "username": "mluukkai",
+      "password": "secret"
+    },
+    {
+      "id": "7c6f",
+      "username": "mluukkai",
+      "password": "secret"
+    }
+  ]
+}

@@ -1,22 +1,22 @@
-import { useField } from '../hooks'
+import { useField } from '../hooks';
 
-const CreateNew = (props) => {
-  const content = useField('text')
-  const author = useField('text')
-  const info = useField('text')
+const CreateNew = ({ addAnecdote }) => {
+  const content = useField('text');
+  const author = useField('text');
+  const info = useField('text');
 
   const handleSubmit = (e) => {
-    e.preventDefault()
-    props.addNew({
+    e.preventDefault();
+    addAnecdote({
       content: content.inputProps.value,
       author: author.inputProps.value,
       info: info.inputProps.value,
-      votes: 0
-    })
-    content.reset()
-    author.reset()
-    info.reset()
-  }
+      votes: 0,
+    });
+    content.reset();
+    author.reset();
+    info.reset();
+  };
 
   return (
     <div>
@@ -35,14 +35,19 @@ const CreateNew = (props) => {
           <input {...info.inputProps} />
         </div>
         <button type="submit">create</button>
-        <button type="button" onClick={() => {
-          content.reset()
-          author.reset()
-          info.reset()
-        }}>reset</button>
+        <button
+          type="button"
+          onClick={() => {
+            content.reset();
+            author.reset();
+            info.reset();
+          }}
+        >
+          reset
+        </button>
       </form>
     </div>
-  )
-}
+  );
+};
 
-export default CreateNew
+export default CreateNew;
