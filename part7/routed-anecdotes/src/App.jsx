@@ -12,7 +12,12 @@ import { initializeAnecdotes, voteAnecdote, addAnecdote } from './reducers/anecd
 import { setNotification } from './reducers/notificationReducer';
 import { setUser } from './reducers/userReducer';
 import LoginForm from './components/LoginForm';
-import loginService from './services/loginService'; 
+import UserList from './components/UserList';
+import User from './components/User';
+import Blog from './components/Blog';
+import loginService from './services/loginService';
+import './App.css';
+
 
 const App = () => {
   const dispatch = useDispatch();
@@ -22,12 +27,14 @@ const App = () => {
   useEffect(() => {
     dispatch(initializeAnecdotes());
     const saved = window.localStorage.getItem('loggedUser');
-    if (saved) dispatch(setUser(JSON.parse(saved)));
+    if (saved) {
+      dispatch(setUser(JSON.parse(saved)));
+    }
   }, [dispatch]);
 
   const match = useMatch('/anecdotes/:id');
   const anecdote = match
-    ? anecdotes.find(a => a.id === Number(match.params.id))
+    ? anecdotes.find(a => a.id === match.params.id)
     : null;
 
   const handleVote = (anecdote) => {
@@ -45,7 +52,7 @@ const App = () => {
       const user = await loginService.login({ username, password });
       dispatch(setUser(user));
       window.localStorage.setItem('loggedUser', JSON.stringify(user));
-      dispatch(setNotification(`Welcome ${user.name}`, 5));
+      dispatch(setNotification(`Welcome ${user.name || user.username}`, 5));
     } catch (error) {
       dispatch(setNotification('Wrong credentials', 5));
     }
@@ -61,8 +68,9 @@ const App = () => {
         <Route path="/login" element={<LoginForm handleLogin={handleLogin} />} />
         <Route path="/create" element={<CreateNew addAnecdote={handleCreate} />} />
         <Route path="/about" element={<About />} />
-        <Route path="/anecdotes/:id" element={<Anecdote anecdote={anecdote} vote={handleVote} />} />
-        <Route path="/anecdotes" element={<AnecdoteList anecdotes={anecdotes} />} />
+        <Route path="/anecdotes/:id" element={<Blog />} />
+        <Route path="/users/:id" element={<User />} />
+        <Route path="/users" element={<UserList />} />
         <Route path="/" element={user ? <AnecdoteList anecdotes={anecdotes} /> : <LoginForm handleLogin={handleLogin} />} />
       </Routes>
 

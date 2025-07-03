@@ -1,20 +1,17 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'
 
 const Menu = () => {
-  const padding = { padding: 5 };
+  const padding = {
+    paddingRight: 5
+  }
   return (
     <div>
-      <Link style={padding} to="/">
-        anecdotes
-      </Link>
-      <Link style={padding} to="/create">
-        create new
-      </Link>
-      <Link style={padding} to="/about">
-        about
-      </Link>
+      <Link to="/" style={padding}>blogs</Link>
+      <Link to="/users" style={padding}>users</Link>
+      <Link to="/create" style={padding}>create</Link>
+      <Link to="/login" style={padding}>login</Link>
     </div>
-  );
-};
+  )
+}
 
-export default Menu;
+export default Menu

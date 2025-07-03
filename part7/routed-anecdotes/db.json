@@ -3,15 +3,47 @@
     {
       "id": "1",
       "content": "If it hurts, do it more often",
-      "votes": 0
+      "author": "Jez Humble",
+      "info": "https://martinfowler.com/bliki/FrequencyReducesDifficulty.html",
+      "votes": 5,
+      "comments": [
+        "Very insightful!",
+        "Agreed."
+      ]
     },
     {
       "id": "2",
       "content": "Adding manpower to a late software project makes it later!",
-      "votes": 0
+      "author": "Fred Brooks",
+      "info": "https://en.wikipedia.org/wiki/The_Mythical_Man-Month",
+      "votes": 3,
+      "comments": [
+        "Happens too often.",
+        "Classic!"
+      ]
     },
     {
       "id": "5575",
+      "content": "Test anecdote",
+      "author": "Tester",
+      "info": "http://example.com/test",
+      "votes": 1,
+      "comments": [
+        "Nice test"
+      ]
+    },
+    {
+      "id": "007c",
+      "content": "Another test",
+      "author": "Tester 2",
+      "info": "http://example.com/another",
+      "votes": 0,
+      "comments": [
+        "comment"
+      ]
+    },
+    {
+      "id": "e2dd",
       "content": "test",
       "author": "test",
       "info": "test",
@@ -20,23 +52,13 @@
   ],
   "users": [
     {
+      "id": "1",
       "username": "mluukkai",
       "password": "secret",
-      "name": "Matti Luukkainen",
-      "id": "1"
+      "name": "Matti Luukkainen"
     },
     {
-      "id": "ca31",
-      "username": "mluukkai",
-      "password": "secret"
-    },
-    {
-      "id": "dbde",
-      "username": "mluukkai",
-      "password": "secret"
-    },
-    {
-      "id": "7c6f",
+      "id": "f18f",
       "username": "mluukkai",
       "password": "secret"
     }
