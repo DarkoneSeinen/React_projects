@@ -1,36 +1,71 @@
-import { useQuery } from "@apollo/client";
-import { ALL_AUTHORS } from "../queries";
+import { useQuery, useMutation } from '@apollo/client'
+import { useState } from 'react'
+import { ALL_AUTHORS, EDIT_AUTHOR } from '../queries'
 
-const Authors = ({ show }) => {
-  const { loading, error, data } = useQuery(ALL_AUTHORS);
+const Authors = (props) => {
+  const result = useQuery(ALL_AUTHORS)
+  const [name, setName] = useState('')
+  const [born, setBorn] = useState('')
+  const [editAuthor] = useMutation(EDIT_AUTHOR, {
+    refetchQueries: [{ query: ALL_AUTHORS }]
+  })
 
-  if (!show) return null;
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error fetching authors</div>;
+  if (!props.show || result.loading) {
+    return null
+  }
+
+  const authors = result.data.allAuthors
+
+  const submit = async (event) => {
+    event.preventDefault()
+    await editAuthor({ variables: { name, setBornTo: parseInt(born) } })
+    setName('')
+    setBorn('')
+  }
 
   return (
     <div>
-      <h2>Authors</h2>
+      <h2>authors</h2>
       <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Born</th>
-            <th>Books</th>
-          </tr>
-        </thead>
         <tbody>
-          {data.allAuthors.map((a) => (
+          <tr>
+            <th>name</th>
+            <th>born</th>
+            <th>books</th>
+          </tr>
+          {authors.map((a) => (
             <tr key={a.name}>
               <td>{a.name}</td>
-              <td>{a.born ?? "N/A"}</td>
+              <td>{a.born || 'N/A'}</td>
               <td>{a.bookCount}</td>
             </tr>
           ))}
         </tbody>
       </table>
-    </div>
-  );
-};
 
-export default Authors;
+      <h3>Set birthyear</h3>
+      <form onSubmit={submit}>
+        <div>
+          name
+          <select value={name} onChange={({ target }) => setName(target.value)}>
+            <option value="">-- Select author --</option>
+            {authors.map((a) => (
+              <option key={a.name} value={a.name}>{a.name}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          born
+          <input
+            type="number"
+            value={born}
+            onChange={({ target }) => setBorn(target.value)}
+          />
+        </div>
+        <button type="submit">update author</button>
+      </form>
+    </div>
+  )
+}
+
+export default Authors
