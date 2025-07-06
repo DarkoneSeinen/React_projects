@@ -1,28 +1,37 @@
-const gql = require('graphql-tag')
-const { books, authors } = require('./data')
-
-let bookData = [...books]
-let authorData = [...authors]
+const { gql } = require('apollo-server-core')
 
 const typeDefs = gql`
-  type Book {
-    title: String!
-    author: String!
-    published: Int!
-    genres: [String!]!
-  }
-
   type Author {
     name: String!
     born: Int
-    bookCount: Int!
+    bookCount: Int
+    id: ID!
+  }
+
+  type Book {
+    title: String!
+    published: Int!
+    author: Author!
+    genres: [String!]!
+    id: ID!
+  }
+
+  type User {
+    username: String!
+    favoriteGenre: String!
+    id: ID!
+  }
+
+  type Token {
+    value: String!
   }
 
   type Query {
     bookCount: Int!
     authorCount: Int!
-    allBooks(author: String, genre: String): [Book!]!
+    allBooks(genre: String): [Book!]!
     allAuthors: [Author!]!
+    me: User
   }
 
   type Mutation {
@@ -31,58 +40,11 @@ const typeDefs = gql`
       author: String!
       published: Int!
       genres: [String!]!
-    ): Book
-
-    editAuthor(
-      name: String!
-      setBornTo: Int!
-    ): Author
+    ): Book!
+    editAuthor(name: String!, setBornTo: Int!): Author
+    createUser(username: String!, favoriteGenre: String!): User
+    login(username: String!, password: String!): Token
   }
 `
 
-const resolvers = {
-  Query: {
-    bookCount: () => bookData.length,
-    authorCount: () => authorData.length,
-    allBooks: (root, args) => {
-      let filtered = bookData
-      if (args.author) {
-        filtered = filtered.filter(b => b.author === args.author)
-      }
-      if (args.genre) {
-        filtered = filtered.filter(b => b.genres.includes(args.genre))
-      }
-      return filtered
-    },
-    allAuthors: () => authorData
-  },
-
-  Author: {
-    bookCount: (root) =>
-      bookData.filter(b => b.author === root.name).length
-  },
-
-  Mutation: {
-    addBook: (root, args) => {
-      const newBook = { ...args }
-      bookData = bookData.concat(newBook)
-
-      if (!authorData.find(a => a.name === args.author)) {
-        authorData.push({ name: args.author, born: null })
-      }
-
-      return newBook
-    },
-
-    editAuthor: (root, args) => {
-      const author = authorData.find(a => a.name === args.name)
-      if (!author) return null
-
-      const updatedAuthor = { ...author, born: args.setBornTo }
-      authorData = authorData.map(a => a.name === args.name ? updatedAuthor : a)
-      return updatedAuthor
-    }
-  }
-}
-
-module.exports = { typeDefs, resolvers }
+module.exports = typeDefs
