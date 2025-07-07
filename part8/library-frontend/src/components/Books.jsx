@@ -5,7 +5,6 @@ const Books = (props) => {
   const result = useQuery(ALL_BOOKS)
 
   if (!props.show) return null
-
   if (result.loading) return <div>loading...</div>
   if (result.error) return <div>error fetching books</div>
 
@@ -14,19 +13,14 @@ const Books = (props) => {
   return (
     <div>
       <h2>books</h2>
-
       <table>
         <tbody>
           <tr>
-            <th>title</th>
-            <th>author</th>
-            <th>published</th>
+            <th>title</th><th>author</th><th>published</th>
           </tr>
           {books.map((book) => (
             <tr key={book.title}>
-              <td>{book.title}</td>
-              <td>{book.author}</td>
-              <td>{book.published}</td>
+              <td>{book.title}</td><td>{book.author.name}</td><td>{book.published}</td>
             </tr>
           ))}
         </tbody>

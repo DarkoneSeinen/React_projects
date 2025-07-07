@@ -8,106 +8,54 @@ const resolvers = {
   Query: {
     bookCount: async () => Book.countDocuments(),
     authorCount: async () => Author.countDocuments(),
-    allBooks: async (root, args) => {
+    allBooks: async (_, args) => {
       return args.genre
         ? Book.find({ genres: { $in: [args.genre] } }).populate('author')
         : Book.find({}).populate('author')
     },
     allAuthors: async () => Author.find({}),
-    me: (root, args, context) => context.currentUser
+    me: (_, __, context) => context.currentUser,
   },
 
   Mutation: {
-    addBook: async (root, args, context) => {
-      if (!context.currentUser) {
-        throw new GraphQLError('No autorizado', {
-          extensions: { code: 'UNAUTHENTICATED' }
-        })
-      }
+    addBook: async (_, args, context) => {
+      if (!context.currentUser) throw new GraphQLError('Not authenticated')
 
       let author = await Author.findOne({ name: args.author })
-
-      if (!author) {
-        author = new Author({ name: args.author })
-        await author.save()
-      }
+      if (!author) author = new Author({ name: args.author })
+      await author.save()
 
       const book = new Book({ ...args, author: author._id })
-
-      try {
-        await book.save()
-      } catch (error) {
-        throw new GraphQLError('Error al guardar libro', {
-          extensions: {
-            code: 'BAD_USER_INPUT',
-            invalidArgs: args,
-            error
-          }
-        })
-      }
-
+      await book.save()
       return book.populate('author')
     },
 
-    editAuthor: async (root, args, context) => {
-      if (!context.currentUser) {
-        throw new GraphQLError('No autorizado', {
-          extensions: { code: 'UNAUTHENTICATED' }
-        })
-      }
+    editAuthor: async (_, { name, setBornTo }, context) => {
+      if (!context.currentUser) throw new GraphQLError('Not authenticated')
 
-      const author = await Author.findOne({ name: args.name })
+      const author = await Author.findOne({ name })
       if (!author) return null
-
-      author.born = args.setBornTo
-      try {
-        await author.save()
-      } catch (error) {
-        throw new GraphQLError('Error al editar autor', {
-          extensions: { code: 'BAD_USER_INPUT', error }
-        })
-      }
-
-      return author
+      author.born = setBornTo
+      return author.save()
     },
 
-    createUser: async (root, args) => {
-      const user = new User({ ...args })
-
-      try {
-        await user.save()
-      } catch (error) {
-        throw new GraphQLError('Error al crear usuario', {
-          extensions: { code: 'BAD_USER_INPUT', error }
-        })
-      }
-
-      return user
+    createUser: async (_, args) => {
+      const user = new User(args)
+      return await user.save()
     },
 
-    login: async (root, args) => {
-      const user = await User.findOne({ username: args.username })
+    login: async (_, { username, password }) => {
+      const user = await User.findOne({ username })
+      if (!user || password !== 'password') throw new GraphQLError('Invalid credentials')
 
-      if (!user || args.password !== 'secret') {
-        throw new GraphQLError('Credenciales incorrectas', {
-          extensions: { code: 'BAD_USER_INPUT' }
-        })
-      }
-
-      const userForToken = {
-        username: user.username,
-        id: user._id
-      }
-
+      const userForToken = { username: user.username, id: user._id }
       return { value: jwt.sign(userForToken, process.env.JWT_SECRET) }
     }
   },
 
   Author: {
-    bookCount: async (root) => {
-      return Book.countDocuments({ author: root._id })
-    }
-  }
+    bookCount: async (root) => Book.countDocuments({ author: root._id })
+  },
 }
 
 module.exports = resolvers
