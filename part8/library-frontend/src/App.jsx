@@ -28,6 +28,7 @@ const App = () => {
     return (
       <div>
         <Notify errorMessage={errorMessage} />
+        <h2>Login</h2>
         <LoginForm setError={notify} setToken={setToken} />
       </div>
     );
@@ -42,6 +43,7 @@ const App = () => {
         <button onClick={() => setPage("add")}>add book</button>
         <button onClick={logout}>logout</button>
       </div>
+
       {page === "authors" && <Authors show={true} />}
       {page === "books" && <Books show={true} />}
       {page === "add" && <NewBook show={true} />}
