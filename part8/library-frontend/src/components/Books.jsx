@@ -1,36 +1,44 @@
-import { useQuery } from '@apollo/client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useQuery, useLazyQuery } from '@apollo/client'
 import { ALL_BOOKS } from '../queries'
 
 const Books = ({ show }) => {
-  const [selectedGenre, setSelectedGenre] = useState(null)
+  const [genre, setGenre] = useState(null)
+  const { data: initialData } = useQuery(ALL_BOOKS)
+  const [getBooksByGenre, { data: filteredData }] = useLazyQuery(ALL_BOOKS)
 
-  const { loading, data } = useQuery(ALL_BOOKS, {
-    variables: selectedGenre ? { genre: selectedGenre } : {},
-  })
+  useEffect(() => {
+    if (genre) {
+      getBooksByGenre({ variables: { genre } })
+    }
+  }, [genre, getBooksByGenre])
 
   if (!show) return null
-  if (loading) return <div>loading...</div>
 
-  const books = data.allBooks
+  const books = genre
+    ? filteredData?.allBooks || []
+    : initialData?.allBooks || []
 
-  // Obtener lista de géneros únicos
-  const allGenres = [...new Set(books.flatMap((b) => b.genres))]
+  const genres = Array.from(
+    new Set(initialData?.allBooks.flatMap((b) => b.genres) || [])
+  )
 
   return (
     <div>
       <h2>books</h2>
-      {selectedGenre && <p>in genre <b>{selectedGenre}</b></p>}
+      {genre && <p>in genre <strong>{genre}</strong></p>}
 
       <table>
-        <tbody>
+        <thead>
           <tr>
             <th>title</th>
             <th>author</th>
             <th>published</th>
           </tr>
+        </thead>
+        <tbody>
           {books.map((book) => (
-            <tr key={book.id}>
+            <tr key={book.title}>
               <td>{book.title}</td>
               <td>{book.author.name}</td>
               <td>{book.published}</td>
@@ -39,13 +47,13 @@ const Books = ({ show }) => {
         </tbody>
       </table>
 
-      <div style={{ marginTop: '1em' }}>
-        {allGenres.map((g) => (
-          <button key={g} onClick={() => setSelectedGenre(g)}>
+      <div style={{ marginTop: '1rem' }}>
+        <button onClick={() => setGenre(null)}>all genres</button>
+        {genres.map((g) => (
+          <button key={g} onClick={() => setGenre(g)}>
             {g}
           </button>
         ))}
-        <button onClick={() => setSelectedGenre(null)}>all genres</button>
       </div>
     </div>
   )
