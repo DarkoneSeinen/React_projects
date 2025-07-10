@@ -3,18 +3,41 @@ const jwt = require('jsonwebtoken')
 const Author = require('./models/author')
 const Book = require('./models/book')
 const User = require('./models/user')
+const { PubSub } = require('graphql-subscriptions')
+const pubsub = new PubSub()
 
 const resolvers = {
   Query: {
     bookCount: async () => Book.countDocuments(),
     authorCount: async () => Author.countDocuments(),
+
     allBooks: async (_, args) => {
       return args.genre
         ? Book.find({ genres: { $in: [args.genre] } }).populate('author')
         : Book.find({}).populate('author')
     },
-    allAuthors: async () => Author.find({}),
+
+    allAuthors: async () => {
+      const authors = await Author.find({})
+      const bookCounts = await Book.aggregate([
+        { $group: { _id: '$author', count: { $sum: 1 } } }
+      ])
+      const countMap = {}
+      bookCounts.forEach(b => {
+        countMap[b._id.toString()] = b.count
+      })
+
+      return authors.map(author => ({
+        ...author.toObject(),
+        bookCount: countMap[author._id.toString()] || 0
+      }))
+    },
+
     me: (_, __, context) => context.currentUser,
+  },
+
+  Author: {
+    bookCount: (root) => root.bookCount
   },
 
   Mutation: {
@@ -22,12 +45,17 @@ const resolvers = {
       if (!context.currentUser) throw new GraphQLError('Not authenticated')
 
       let author = await Author.findOne({ name: args.author })
-      if (!author) author = new Author({ name: args.author })
-      await author.save()
+      if (!author) {
+        author = new Author({ name: args.author })
+        await author.save()
+      }
 
       const book = new Book({ ...args, author: author._id })
       await book.save()
-      return book.populate('author')
+      const populatedBook = await book.populate('author')
+
+      pubsub.publish('BOOK_ADDED', { bookAdded: populatedBook })
+      return populatedBook
     },
 
     editAuthor: async (_, { name, setBornTo }, context) => {
@@ -50,11 +78,13 @@ const resolvers = {
 
       const userForToken = { username: user.username, id: user._id }
       return { value: jwt.sign(userForToken, process.env.JWT_SECRET) }
-    }
+    },
   },
 
-  Author: {
-    bookCount: async (root) => Book.countDocuments({ author: root._id })
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterator(['BOOK_ADDED']),
+    },
   },
 }
 
