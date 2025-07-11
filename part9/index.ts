@@ -1,31 +1,43 @@
 import express from 'express';
-import calculateBmi from './bmiCalculator';
+import { calculateExercises } from './exerciseCalculator';
 
 const app = express();
-const PORT = 3002;
+app.use(express.json());
 
-app.get('/hello', (_req, res) => {
-  res.send('Hello Full Stack!');
+app.get('/ping', (_req, res) => {
+  res.send('pong');
 });
 
-app.get('/bmi', (req, res) => {
-  const { height, weight } = req.query;
+app.post('/exercises', (req, res) => {
+  const body = req.body as unknown;
 
-  if (!height || !weight || isNaN(Number(height)) || isNaN(Number(weight))) {
+  if (
+    !body ||
+    typeof body !== 'object' ||
+    !('daily_exercises' in body) ||
+    !('target' in body)
+  ) {
+    return res.status(400).json({ error: 'parameters missing' });
+  }
+
+  const { daily_exercises, target } = body as {
+    daily_exercises: unknown;
+    target: unknown;
+  };
+
+  if (
+    !Array.isArray(daily_exercises) ||
+    typeof target !== 'number' ||
+    !daily_exercises.every((d) => typeof d === 'number')
+  ) {
     return res.status(400).json({ error: 'malformatted parameters' });
   }
 
-  const heightNum = Number(height);
-  const weightNum = Number(weight);
-
-  const bmi = calculateBmi(heightNum, weightNum);
-
-  return res.json({
-    weight: weightNum,
-    height: heightNum,
-    bmi
-  });
+  const result = calculateExercises(daily_exercises, target);
+  return res.json(result);
 });
+
+const PORT = 3002;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
