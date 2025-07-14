@@ -1,4 +1,5 @@
 fullstackopen
 >>>
 npm create vite@latest bloglist --template react
+npm create vite@latest courseinfo -- --template react-ts
 <<<
