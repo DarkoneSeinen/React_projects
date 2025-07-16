@@ -10,13 +10,18 @@ export enum Gender {
   Other = "other"
 }
 
+export interface Entry {
+  // temporalmente vacío
+}
+
 export interface Patient {
   id: string;
   name: string;
-  occupation: string;
+  dateOfBirth: string;
+  ssn: string;
   gender: Gender;
-  ssn?: string;
-  dateOfBirth?: string;
+  occupation: string;
+  entries: Entry[]; // ✅ nuevo campo
 }
 
 export type PatientFormValues = Omit<Patient, "id" | "entries">;
