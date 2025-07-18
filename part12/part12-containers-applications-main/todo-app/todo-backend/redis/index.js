@@ -1,7 +1,7 @@
 const redis = require('redis')
-const { promisify } = require('util')
 const { REDIS_URL } = require('../util/config')
 
+let client
 let getAsync
 let setAsync
 
@@ -13,12 +13,21 @@ if (!REDIS_URL) {
   getAsync = redisIsDisabled
   setAsync = redisIsDisabled
 } else {
-  const client = redis.createClient({
+  client = redis.createClient({
     url: REDIS_URL
   })
-    
-  getAsync = promisify(client.get).bind(client)
-  setAsync = promisify(client.set).bind(client)    
+
+  client.on('error', (err) => console.error('Redis Client Error', err))
+
+  client.connect()
+
+  getAsync = async (key) => {
+    return await client.get(key)
+  }
+
+  setAsync = async (key, value) => {
+    return await client.set(key, value)
+  }
 }
 
 module.exports = {
