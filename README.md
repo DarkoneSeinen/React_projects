@@ -1,4 +1,4 @@
-# Full Stack Open 2024 - Course Completion 🎓
+# Full Stack Open 2025 - Course Completion 🎓
 
 <table>
 <tr>
